@@ -15,7 +15,7 @@ driver.minimize_window()
 url = "https://ca.indeed.com/jobs?q=software+intern&fromage=1&vjk=f4112d1451a84ec2"
 url2 = "https://ca.indeed.com/jobs?q=&l=Calgary%2C+AB&from=searchOnHP&vjk=181141f55ab488e0"
 seven_days = "https://ca.indeed.com/jobs?q=software+intern&fromage=7&vjk=9e9d4bdff732d2b8"
-driver.get(seven_days)
+driver.get(url)
 driver.implicitly_wait(20)
 html = driver.page_source
 encode = (html.encode('utf-8'))

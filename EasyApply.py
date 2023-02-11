@@ -9,19 +9,10 @@ import pandas as pd
 # clean code from test.py
 from os.path import exists
 
-class Indeed:
+class scrape:
     def __init__(self, url): # url with selected filters
-        self.url = url
         self.driver = webdriver.Chrome(ChromeDriverManager().install())
         self.driver.minimize_window()
-        self.driver.get(self.url)
-        self.driver.implicitly_wait(20)
-        self.html = self.driver.page_source
-        self.encode = (self.html.encode('utf-8'))
-        time.sleep(1)
-        self.driver.quit()
-        self.soup = BeautifulSoup(self.html, "html.parser")
-        # self.jobs = []
         self.job_list = []
         self.days_ago = ""
         self.title = ""
@@ -31,8 +22,10 @@ class Indeed:
         self.job_url = ""
         self.jobcsv = ""
         self.csv_created = False
+        self.wait_time = 1
     
-    def get_jobs(self):
+    def get_jobs_indeed(self, url):
+        self.get_soup(url)
         job_list = []
         for div in self.soup.find_all(name="div", attrs={"class":"job_seen_beacon"}):
             title = div.find("span").text
@@ -55,6 +48,53 @@ class Indeed:
             job_list.append([title, company_name, location, salary, days_ago, current_time, job_url])
         self.job_list = job_list
         return self.job_list
+    def get_jobs_glassdoor(self, url):
+        self.get_soup(url)
+        job_list = []
+        for div in self.soup.find_all(name="li", attrs={"class":"react-job-listing"}):
+            url = div.find("a", attrs={"class":"jobLink"}).get("href")
+            company_name = div.find("a", attrs={"class":"jobLink"}).get("title")
+            days_ago = div.find("div", attrs={"data-test":"job-age"}).text
+            location = div.find("span", attrs={"class":"css-3g3psg pr-xxsm css-iii9i8 e1rrn5ka0"}).text  # this might break in the future
+            title = div.find("a", attrs={"data-test":"job-link"}).find("span").text   
+            try:
+                salary = div.find("span", attrs={"data-test":"detailSalary"}).text
+                est = div.find("span", attrs={"class":"css-0 e1wijj240"}).text
+            except:
+                salary = "N/A"
+                est = ""
+            job_url = "https://www.glassdoor.com" + url
+            now = datetime.now()
+            current_time = now.strftime("%m/%d/%Y, %H:%M:%S")
+            job_list.append([title, company_name, location, salary, days_ago, current_time, job_url])
+        self.job_list = job_list
+        return self.job_list
+
+    def get_jobs_googlelisting(self, url):
+        self.get_soup(url)
+        job_list = []
+        for div in self.soup.find_all(name="li", attrs={"class":"iFjolb gws-plugins-horizon-jobs__li-ed"}):        
+            url = div.find("span", attrs={"class":"DaDV9e"})
+            try:
+                url = url.find("a").get("href")
+            except:
+                pass
+            title = div.find("div", attrs={"class":"BjJfJf PUpOsf"}).text
+            company_name = div.find("div", attrs={"class":"vNEEBe"}).text
+            location = div.find("div", attrs={"class":"Qk80Jf"}).text
+            days_ago = div.find("span", attrs={"class":"LL4CDc"}).find("span").text
+            try:
+                print("URL: "+url)
+            except:
+                pass
+            salary = "N/A"
+            job_url = "https://www.glassdoor.com" + url
+            now = datetime.now()
+            current_time = now.strftime("%m/%d/%Y, %H:%M:%S")
+            job_list.append([title, company_name, location, salary, days_ago, current_time, job_url])
+        self.job_list = job_list
+        return self.job_list
+
 
     def create_csv(self, info, name):
         name = name+".csv"
@@ -72,10 +112,6 @@ class Indeed:
             data.drop_duplicates(subset="URL", keep='first', inplace=True)
             data.to_csv(self.jobcsv, index=False)
 
-        # self.csv_created = True
-        # if self.csv_created == True:
-        #     self.export_to_csv(info, name)
-
     def export_to_csv(self, info, name):
         # name = name+".csv"
         with open(name, "a", newline="") as f:
@@ -88,6 +124,20 @@ class Indeed:
         data.to_csv(self.jobcsv, index=False)
 
 
-# indeed_jobs = Indeed("https://ca.indeed.com/jobs?q=software+intern&fromage=1&vjk=8280af2280ba31d1")
-# jobs = indeed_jobs.get_jobs()
-# indeed_jobs.export_to_csv(jobs, "jobs2.csv")
+    def get_soup(self, url):
+        self.url = url
+        self.driver.get(self.url)
+        self.driver.implicitly_wait(20)
+        # time.sleep(self.wait_time)
+        time.sleep(10)
+        self.html = self.driver.page_source
+        self.encode = (self.html.encode('utf-8'))
+        # self.driver.quit()
+        self.soup = BeautifulSoup(self.html, "html.parser")
+        return self.soup
+
+    def set_wait_time(self, time):
+        self.wait_time = time
+
+    def driver_quit(self):
+        self.driver.quit()
