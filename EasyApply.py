@@ -107,10 +107,7 @@ class scrape:
                     writer.writerow(["Title", "Company", "Location", "Salary", "Days ago", "Date Scraped", "URL"])
                 for x in info:
                     writer.writerow(x)
-            
-            data = pd.read_csv(self.jobcsv, encoding = "ISO-8859-1")
-            data.drop_duplicates(subset="URL", keep='first', inplace=True)
-            data.to_csv(self.jobcsv, index=False)
+
 
     def export_to_csv(self, info, name):
         # name = name+".csv"
