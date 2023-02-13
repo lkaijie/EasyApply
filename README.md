@@ -10,12 +10,8 @@ Example CSV file output
 ## Additional Features
 Outputs results into a specified CSV(no duplicates)
 
-
-
-
-
 ## Setup
 Simply download the file and run main.py (downloading required libraries)
 
 ## Incoming features
-Will add websites such as talent.com/linkedin/glassdoor soon
+Will add graphs, summary and GUI, maybe host on web?
