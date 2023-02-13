@@ -25,7 +25,7 @@ class scrape:
         self.wait_time = 1
     
     def get_jobs_indeed(self, url):
-        self.get_soup(url)
+        self.get_soup_indeed(url)
         job_list = []
         for div in self.soup.find_all(name="div", attrs={"class":"job_seen_beacon"}):
             title = div.find("span").text
@@ -88,7 +88,7 @@ class scrape:
             except:
                 pass
             salary = "N/A"
-            job_url = "https://www.glassdoor.com" + url
+            job_url = url
             now = datetime.now()
             current_time = now.strftime("%m/%d/%Y, %H:%M:%S")
             job_list.append([title, company_name, location, salary, days_ago, current_time, job_url])
@@ -107,6 +107,9 @@ class scrape:
                     writer.writerow(["Title", "Company", "Location", "Salary", "Days ago", "Date Scraped", "URL"])
                 for x in info:
                     writer.writerow(x)
+        data = pd.read_csv(self.jobcsv, encoding = "ISO-8859-1")
+        data.drop_duplicates(subset=['Title','Company','Location'], keep='first', inplace=True)
+        data.to_csv(self.jobcsv, index=False)
 
 
     def export_to_csv(self, info, name):
@@ -126,12 +129,25 @@ class scrape:
         self.driver.get(self.url)
         self.driver.implicitly_wait(20)
         # time.sleep(self.wait_time)
-        time.sleep(10)
+        time.sleep(1)
         self.html = self.driver.page_source
         self.encode = (self.html.encode('utf-8'))
         # self.driver.quit()
         self.soup = BeautifulSoup(self.html, "html.parser")
         return self.soup
+
+    def get_soup_indeed(self, url):
+        self.url = url
+        self.driver.get(self.url)
+        self.driver.implicitly_wait(20)
+        # time.sleep(self.wait_time)
+        time.sleep(5)
+        self.html = self.driver.page_source
+        self.encode = (self.html.encode('utf-8'))
+        # self.driver.quit()
+        self.soup = BeautifulSoup(self.html, "html.parser")
+        return self.soup
+
 
     def set_wait_time(self, time):
         self.wait_time = time
